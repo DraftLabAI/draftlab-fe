@@ -12,7 +12,11 @@ export default function Test() {
   };
 
   const callAi = async () => {
-    const res = await aiService.post("/ai/chat", { text: "안녕하세요" });
+    const res = await aiService.post("/api/draft", {   
+        topic: "테스트 주제",
+        target_audience: "일반 사용자",
+        tone: "친근함",
+        additional_info: "추가 요청 없음"});
     setAiResult(JSON.stringify(res.data));
   };
 
