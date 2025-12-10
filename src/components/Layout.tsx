@@ -14,7 +14,7 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <h1 className="text-gray-900">AI Writing Platform</h1>
+            <h1 className="text-gray-900">DraftLAB</h1>
             <nav className="flex items-center gap-1">
               <Button
                 variant={currentPage === "home" ? "secondary" : "ghost"}
@@ -64,7 +64,9 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
       </header>
 
       {/* Main Content */}
-      {children}
+      <main className="max-w-[1400px] mx-auto py-10">
+        {children}
+      </main>
     </div>
   );
 }
