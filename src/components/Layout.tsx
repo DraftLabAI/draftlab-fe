@@ -1,5 +1,7 @@
 import { Home, FileText, Upload, User, PenTool, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
+import { useEffect } from "react";
+import { backend } from "@/api/backend";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,6 +10,13 @@ interface LayoutProps {
 }
 
 export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
+  
+  useEffect(() => {
+    backend.get("/hello")
+      .then(res => console.log("📡 백엔드 연결:", res.data))
+      .catch(err => console.error("❌ API 오류:", err));
+  }, []);
+
   const navigationItems = [
     { 
       page: "home", 
