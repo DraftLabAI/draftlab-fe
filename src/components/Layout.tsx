@@ -2,15 +2,30 @@ import { Home, FileText, Upload, User, PenTool, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect } from "react";
 import { backend } from "@/api/backend";
+import { authService } from "@/api/authService";
+import type { Users } from "@/api/authService";
 
 interface LayoutProps {
   children: React.ReactNode;
   currentPage: string;
   onNavigate: (page: string) => void;
+  currentUser: Users | null;
+  onLogin: React.Dispatch<React.SetStateAction<Users | null>>;
 }
 
-export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
+export function Layout({ children, currentPage, onNavigate, onLogin, currentUser }: LayoutProps) {
   
+  const handleLogin = async () => {
+    try {
+      const user = await authService.loginDummy();
+      console.log("✅ 로그인 성공:", user);
+      onLogin(user); // ✅ setCurrentUser 대신 props로 받은 onLogin 사용
+    } catch (e) {
+      console.error(e);
+      alert("로그인 실패");
+    }
+  };
+
   useEffect(() => {
     backend.get("/hello")
       .then(res => console.log("📡 백엔드 연결:", res.data))
@@ -81,6 +96,7 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
             <Button 
               variant="outline" 
               size="sm" 
+              onClick={handleLogin}
               className="
                 text-gray-700 
                 border-gray-300 
