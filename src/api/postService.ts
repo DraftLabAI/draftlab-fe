@@ -1,18 +1,36 @@
 import { backend } from "./backend";
 
+export type PostInfo = {
+  idx: number;
+  userIdx: number;
+  title: string;
+  category: string;
+  tag: string | null;
+  contents: string;
+  createdAt: string; // LocalDateTime -> string으로 넘어옴
+  updatedAt: string;
+};
+
+export type ReadPostsResponse = {
+  posts: PostInfo[];
+};
+
+export type CreatePostPayload = {
+  userIdx: number;
+  title: string;
+  contents: string;
+  category: string;
+  tag?: string;
+};
+
 export const postService = {
-  getAllPosts: async () => {
-    const res = await backend.get("/posts");
-    return res.data;
+  /** ✅ 목록 조회: { posts: [...] } */
+  getList() {
+    return backend.get<ReadPostsResponse>("/posts");
   },
 
-  getPost: async (id: number) => {
-    const res = await backend.get(`/posts/${id}`);
-    return res.data;
+  /** ✅ 생성 */
+  create(payload: CreatePostPayload) {
+    return backend.post("/posts", payload);
   },
-
-  createPost: async (data: any) => {
-    const res = await backend.post("/posts", data);
-    return res.data;
-  }
 };

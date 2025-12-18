@@ -1,8 +1,8 @@
 import { Home, FileText, Upload, User, PenTool, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
 import { useEffect } from "react";
-import { backend } from "@/api/backend";
 import { authService } from "@/api/authService";
+import { authStorage } from "@/services/storage/authStorage";
 import type { Users } from "@/api/authService";
 
 interface LayoutProps {
@@ -15,22 +15,26 @@ interface LayoutProps {
 
 export function Layout({ children, currentPage, onNavigate, onLogin, currentUser }: LayoutProps) {
   
+  useEffect(() => {
+    const storedUser = authStorage.get();
+    if (storedUser && !currentUser) {
+      onLogin(storedUser);
+    }
+  }, []);
+  
   const handleLogin = async () => {
     try {
       const user = await authService.loginDummy();
-      console.log("✅ 로그인 성공:", user);
-      onLogin(user); // ✅ setCurrentUser 대신 props로 받은 onLogin 사용
+
+      authStorage.set(user);   // ✅ storage 저장
+      onLogin(user);           // ✅ 전역 state 반영
+
+      console.log("✅ 로그인 성공 & storage 저장:", user);
     } catch (e) {
       console.error(e);
       alert("로그인 실패");
     }
   };
-
-  useEffect(() => {
-    backend.get("/hello")
-      .then(res => console.log("📡 백엔드 연결:", res.data))
-      .catch(err => console.error("❌ API 오류:", err));
-  }, []);
 
   const navigationItems = [
     { 

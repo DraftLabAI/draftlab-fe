@@ -1,3 +1,5 @@
+import { useEffect, useMemo, useState } from "react";
+import { postService, type PostInfo } from "@/api/postService";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -8,6 +10,10 @@ interface HomePageProps {
 }
 
 export function HomePage({ onNavigate }: HomePageProps) {
+  const [posts, setPosts] = useState<PostInfo[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const categories = [
     { name: "전체", count: 1234, active: true },
     { name: "기술", count: 342 },
@@ -16,80 +22,6 @@ export function HomePage({ onNavigate }: HomePageProps) {
     { name: "개발", count: 567 },
     { name: "마케팅", count: 234 },
     { name: "디자인", count: 178 },
-  ];
-  const posts = [
-    {
-      id: 1,
-      title: "AI가 변화시키는 콘텐츠 제작의 미래",
-      excerpt: "인공지능 기술이 글쓰기 프로세스를 어떻게 혁신하고 있는지 살펴봅니다. 효율성과 창의성의 완벽한 조화...",
-      author: "김민준",
-      date: "2025-11-18",
-      readTime: "5분",
-      category: "기술",
-      views: 1234,
-      likes: 89,
-      aiAssisted: true,
-    },
-    {
-      id: 2,
-      title: "효과적인 블로그 글쓰기 전략 10가지",
-      excerpt: "독자의 시선을 사로잡는 글쓰기 노하우를 공유합니다. 제목 작성부터 마무리까지 단계별 가이드...",
-      author: "이서연",
-      date: "2025-11-17",
-      readTime: "7분",
-      category: "마케팅",
-      views: 2341,
-      likes: 156,
-      aiAssisted: true,
-    },
-    {
-      id: 3,
-      title: "Notion을 활용한 글쓰기 워크플로우",
-      excerpt: "생산성 도구를 활용하여 글쓰기 프로세스를 체계화하는 방법을 소개합니다...",
-      author: "박지호",
-      date: "2025-11-16",
-      readTime: "4분",
-      category: "개발",
-      views: 987,
-      likes: 67,
-      aiAssisted: true,
-    },
-    {
-      id: 4,
-      title: "SEO 최적화를 위한 글쓰기 가이드",
-      excerpt: "검색엔진에서 상위 노출되기 위한 콘텐츠 작성 전략과 키워드 활용 팁...",
-      author: "최유진",
-      date: "2025-11-15",
-      readTime: "6분",
-      category: "마케팅",
-      views: 1876,
-      likes: 134,
-      aiAssisted: true,
-    },
-    {
-      id: 5,
-      title: "기술 문서 작성 베스트 프랙티스",
-      excerpt: "개발자를 위한 명확하고 간결한 기술 문서 작성 방법론을 다룹니다...",
-      author: "정한솔",
-      date: "2025-11-14",
-      readTime: "8분",
-      category: "개발",
-      views: 1543,
-      likes: 98,
-      aiAssisted: true,
-    },
-    {
-      id: 6,
-      title: "스토리텔링으로 브랜드 가치 전달하기",
-      excerpt: "효과적인 스토리텔링 기법을 통해 독자와 감정적으로 연결되는 방법...",
-      author: "강민서",
-      date: "2025-11-13",
-      readTime: "5분",
-      category: "비즈니스",
-      views: 2103,
-      likes: 187,
-      aiAssisted: true,
-    },
   ];
 
   const aiRecommended = [
@@ -109,6 +41,24 @@ export function HomePage({ onNavigate }: HomePageProps) {
       readTime: "4분",
     },
   ];
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await postService.getList();
+        setPosts(res.data.posts ?? []);
+      } catch (e) {
+        console.error(e);
+        setError("게시글을 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
    return (
     <div className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
@@ -180,35 +130,35 @@ export function HomePage({ onNavigate }: HomePageProps) {
         <main className="flex-1 space-y-6">
           {posts.map((post) => (
             <Card 
-              key={post.id} 
+              key={post.idx} 
               className="p-6 hover:shadow-md transition-shadow cursor-pointer rounded-xl group"
-              onClick={() => onNavigate("post", post.id)}
+              onClick={() => onNavigate("post", post.idx)}
             >
               <div className="flex items-start gap-5">
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center space-x-2">
-                    {post.aiAssisted && (
+                    {/* {post.aiAssisted && (
                       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                         <Sparkles className="w-3 h-3 mr-1" />
                         AI 어시스트
                       </Badge>
-                    )}
+                    )} */}
                     <Badge variant="outline">{post.category}</Badge>
                     <span className="text-gray-500 text-sm">•</span>
-                    <span className="text-gray-500 text-sm">{post.date}</span>
-                    <span className="text-gray-500 text-sm">•</span>
-                    <span className="text-gray-500 text-sm">{post.readTime} 읽기</span>
+                    <span className="text-gray-500 text-sm">{post.createdAt?.slice(0, 10)}</span>
+                    {/* <span className="text-gray-500 text-sm">•</span>
+                    <span className="text-gray-500 text-sm">{post.readTime} 읽기</span> */}
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
                     {post.title}
                   </h3>
-                  <p className="text-gray-600">{post.excerpt}</p>
+                  <p className="text-gray-600">{post.contents}</p>
                   <div className="flex justify-between items-center text-gray-500">
-                    <span>{post.author}</span>
-                    <div className="flex items-center space-x-3">
+                    <span>{post.userIdx}</span>
+                    {/* <div className="flex items-center space-x-3">
                       <span>조회 {post.views.toLocaleString()}</span>
                       <span>좋아요 {post.likes}</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
                 <div className="w-32 h-32 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">

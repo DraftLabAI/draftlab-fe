@@ -28,7 +28,7 @@ export default function App() {
       case "post":
         return <PostDetailPage onNavigate={handleNavigate} />;
       case "editor":
-        return <EditorPage />;
+        return <EditorPage currentUser={currentUser} />;
       case "upload":
         return <UploadPage />;
       case "mypage":

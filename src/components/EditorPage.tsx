@@ -30,8 +30,14 @@ import {
   Edit,
 } from "lucide-react";
 import { aiService } from "@/api/aiService";
+import { postService } from "@/api/postService";
+import type { Users } from "@/api/authService";
 
-export function EditorPage() {
+type EditorPageProps = {
+  currentUser: Users | null;
+};
+
+export function EditorPage({ currentUser }: EditorPageProps) {
   console.log("EditorPage mounted");
   const categoryOptions = useMemo(
   () => ["기술", "비즈니스", "마케팅", "라이프스타일", "개발", "마케팅", "디자인"] as const,
@@ -40,6 +46,8 @@ export function EditorPage() {
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(true);
   const [category, setCategory] = useState<(typeof categoryOptions)[number] | "">("");
+  const [title, setTitle] = useState("AI가 변화시키는 콘텐츠 제작의 미래");
+  const [contents, setContents] = useState(`인공지능 기술의 발전은 우리가 콘텐츠를 제작하고...`);
 
   useEffect(() => {
     setIsCategoryModalOpen(true);
@@ -201,6 +209,37 @@ export function EditorPage() {
     { icon: Sparkles, label: "주제 입력", prompt: "AI 글쓰기 도구에 대해 쓰고 싶어요" },
   ];
 
+  const handlePublish = async () => {
+    try {
+      if (!currentUser) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+      if (!category) {
+        alert("카테고리를 선택해주세요.");
+        setIsCategoryModalOpen(true);
+        return;
+      }
+      if (!title.trim() || !contents.trim()) {
+        alert("제목과 본문을 입력해주세요.");
+        return;
+      }
+
+      await postService.create({
+        userIdx: currentUser.idx, // ✅ props 사용
+        title: title.trim(),
+        contents,
+        category,
+        tag: "",
+      });
+
+      alert("발행 완료!");
+    } catch (e) {
+      console.error(e);
+      alert("발행 실패");
+    }
+  };
+
   return (
     <>
     {/* ✅ 카테고리 선택 모달 */}
@@ -337,7 +376,8 @@ export function EditorPage() {
             <Input
               placeholder="제목을 입력하세요"
               className="flex-1 max-w-2xl border-none shadow-none text-gray-900"
-              defaultValue="AI가 변화시키는 콘텐츠 제작의 미래"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
           </div>
           <div className="flex items-center gap-2">
@@ -359,7 +399,9 @@ export function EditorPage() {
               <Eye className="w-4 h-4 mr-2" />
               미리보기
             </Button>
-            <Button size="sm">발행</Button>
+            <Button size="sm" onClick={handlePublish}>
+              발행
+            </Button>
           </div>
         </div>
 
@@ -368,28 +410,10 @@ export function EditorPage() {
           <div className="max-w-3xl mx-auto">
             <Textarea
               placeholder="당신의 이야기를 들려주세요...
-
-AI 글쓰기 도우미와 대화하며 더 나은 글을 완성하세요."
+              AI 글쓰기 도우미와 대화하며 더 나은 글을 완성하세요."
               className="min-h-[calc(100vh-200px)] border-none shadow-none resize-none text-gray-700 p-0 focus-visible:ring-0"
-              defaultValue={`인공지능 기술의 발전은 우리가 콘텐츠를 제작하고 소비하는 방식을 근본적으로 변화시키고 있습니다. 특히 글쓰기 영역에서 AI는 단순한 도구를 넘어 창의적인 파트너로 자리잡고 있습니다.
-
-AI 글쓰기 도구의 진화
-
-초기 AI 글쓰기 도구는 단순한 문법 교정이나 맞춤법 검사 수준이었습니다. 하지만 최근 GPT-4, Claude와 같은 대규모 언어 모델의 등장으로 상황이 완전히 달라졌습니다.
-
-이제 AI는 문맥을 이해하고, 톤을 조절하며, 심지어 창의적인 아이디어까지 제안할 수 있습니다. 이는 작가들에게 더 많은 시간과 에너지를 창의적인 작업에 집중할 수 있게 해줍니다.
-
-콘텐츠 제작 워크플로우의 변화
-
-AI를 활용한 새로운 글쓰기 워크플로우는 다음과 같은 단계로 구성됩니다:
-
-1. 아이디어 브레인스토밍 및 개요 작성
-2. AI를 활용한 초안 작성
-3. 인간의 편집 및 개선
-4. AI 기반 피드백 및 최적화
-5. 최종 검토 및 발행
-
-이러한 프로세스를 통해 작가들은 생산성을 크게 향상시키면서도 콘텐츠의 품질을 유지하거나 오히려 개선할 수 있습니다.`}
+              value={contents}
+              onChange={(e) => setContents(e.target.value)}
             />
           </div>
         </ScrollArea>
