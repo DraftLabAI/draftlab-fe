@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -6,6 +6,14 @@ import { Separator } from "./ui/separator";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "./ui/dialog";
 import {
   Sparkles,
   Save,
@@ -24,6 +32,19 @@ import {
 import { aiService } from "@/api/aiService";
 
 export function EditorPage() {
+  console.log("EditorPage mounted");
+  const categoryOptions = useMemo(
+  () => ["기술", "비즈니스", "마케팅", "라이프스타일", "개발", "마케팅", "디자인"] as const,
+    []
+  );
+
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(true);
+  const [category, setCategory] = useState<(typeof categoryOptions)[number] | "">("");
+
+  useEffect(() => {
+    setIsCategoryModalOpen(true);
+  }, []);
+
   const [selectedDoc, setSelectedDoc] = useState(1);
   const [chatMessages, setChatMessages] = useState([
     {
@@ -181,6 +202,52 @@ export function EditorPage() {
   ];
 
   return (
+    <>
+    {/* ✅ 카테고리 선택 모달 */}
+    <Dialog
+      open={isCategoryModalOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          setIsCategoryModalOpen(false);
+          return;
+        }
+        setIsCategoryModalOpen(true);
+      }}
+    >
+      <DialogContent
+        className="w-[50vw] max-w-[640px] min-w-[360px] sm:max-w-none"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          <DialogTitle>카테고리를 선택해주세요</DialogTitle>
+          <DialogDescription>
+            글의 목적에 맞는 카테고리를 선택하면 AI 추천 정확도가 높아져요.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="mt-2">
+          <select
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
+            value={category || ""}
+            onChange={(e) => setCategory(e.target.value as any)}
+          >
+            <option value="" disabled>카테고리 선택</option>
+            {categoryOptions.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        <DialogFooter className="mt-4">
+          <Button
+            onClick={() => setIsCategoryModalOpen(false)}
+            disabled={!category}
+          >
+            선택 완료
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     <div className="flex h-[calc(100vh-64px)] bg-gray-50">
       {/* Left Sidebar - Document List */}
       <aside className="w-80 bg-white border-r border-gray-200 flex flex-col">
@@ -274,11 +341,15 @@ export function EditorPage() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <select className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm">
-              <option>기술</option>
-              <option>비즈니스</option>
-              <option>마케팅</option>
-              <option>라이프스타일</option>
+            <select
+              className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
+              value={category || ""}
+              onChange={(e) => setCategory(e.target.value as any)}
+            >
+              <option value="" disabled>카테고리 선택</option>
+              {categoryOptions.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
             <Button variant="ghost" size="sm">
               <Save className="w-4 h-4 mr-2" />
@@ -437,5 +508,6 @@ AI를 활용한 새로운 글쓰기 워크플로우는 다음과 같은 단계�
         </div>
       </aside>
     </div>
+    </>
   );
 }
